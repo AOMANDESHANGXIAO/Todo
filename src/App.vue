@@ -3,7 +3,7 @@
 <template>
   <el-config-provider>
     <div id="app-container">
-      <router-view></router-view>
+      <router-view :key="$route.fullPath"></router-view>
     </div>
   </el-config-provider>
 </template>

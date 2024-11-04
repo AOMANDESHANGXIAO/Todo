@@ -4,6 +4,7 @@ defineOptions({
 })
 interface TabNavProps {
   title: string
+  defaultKey?: string
   list: {
     icon: string
     text: string
@@ -23,16 +24,29 @@ const props = withDefaults(defineProps<TabNavProps>(), {
 const emits = defineEmits<{
   (e: 'change', key: string): void
 }>()
-const activeKey = ref(props.list[0].key)
+const activeKey = ref(props?.defaultKey || props.list[0].key)
 const activeScrollBarRef = ref<HTMLElement | null>(null)
+const activeScrollBarTopValue = ref(0)
+const activeScrollBarTop = computed(() => {
+  return `${activeScrollBarTopValue.value}px`
+})
 const change = (e: MouseEvent, key: string) => {
   emits('change', key)
   activeKey.value = key
   const activeDom = e.target as HTMLElement
   if (activeDom && activeScrollBarRef.value) {
-    activeScrollBarRef.value.style.top = `${activeDom.offsetTop}px`
+    activeScrollBarTopValue.value = activeDom.offsetTop
   }
 }
+onMounted(() => {
+  // 依据defaultKey初始化滚动条的位置
+  const activeDom = document.querySelector(
+    `.nav-tab main div.is-active`
+  ) as HTMLElement
+  if (activeDom && activeScrollBarRef.value) {
+    activeScrollBarTopValue.value = activeDom.offsetTop
+  }
+})
 </script>
 
 <template>
@@ -79,15 +93,7 @@ $item-font__family: 'PingFangLight';
   margin: 0;
   box-sizing: border-box;
   font-family: $item-font__family;
-}
-div,
-span,
-section,
-p {
   cursor: default;
-}
-body {
-  background-color: $color-dark;
 }
 .nav-tab-container {
   width: 200px;
@@ -139,7 +145,7 @@ body {
   border-radius: calc($item-height / 2) 0 0 calc($item-height / 2);
   transition: all 0.3s;
 }
-.nav-tab main div:hover:not(.is-active) {
+.nav-tab main div:hover:not(.is-active):not(.active-scroll-bar) {
   background-color: $color-primary;
   color: $color-light;
 }
@@ -149,13 +155,13 @@ body {
 }
 .nav-tab main div.active-scroll-bar {
   position: absolute;
-  top: 0;
+  top: v-bind(activeScrollBarTop);
   left: 0;
   height: $item-height;
   width: 100%;
   border-radius: calc($item-height / 2) 0 0 calc($item-height / 2);
   background-color: $color-dark;
-  transition: all 0.5s;
+  transition: all 0.3s;
 }
 .nav-tab main div.active-scroll-bar::after,
 .nav-tab main div.active-scroll-bar::before {
@@ -164,11 +170,7 @@ body {
   width: 20px;
   height: 20px;
   /* 制作外圆角的精髓 */
-  background: radial-gradient(
-    circle at 0% 0%,
-    transparent 20px,
-    $color-dark 0
-  );
+  background: radial-gradient(circle at 0% 0%, transparent 20px, $color-dark 0);
   z-index: 10;
 }
 .nav-tab main div.active-scroll-bar::after {
@@ -185,9 +187,9 @@ body {
   /* background-color: var(color-dark); */
   color: $color-light;
 }
-.nav-tab main div .iconfont {
-  transition: all 0.3s;
-}
+// .nav-tab main div .iconfont {
+//   // transition: all 0.3s;
+// }
 .nav-tab main div.is-active .iconfont {
   background-color: $color-primary;
 }

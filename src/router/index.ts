@@ -1,6 +1,12 @@
 // router/index.ts
 import { createRouter, createWebHashHistory } from 'vue-router';
 import type { RouteRecordRaw } from 'vue-router';
+import.meta.glob('@/views/**/*.vue')
+
+// TODO: 动态导入路由
+Object.keys(import.meta.glob('@/views/**/*.vue')).forEach((key) => {
+  console.log('router ===>' + key)
+})
 
 const routes: Array<RouteRecordRaw> = [
   {
